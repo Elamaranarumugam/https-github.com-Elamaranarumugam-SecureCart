@@ -1,0 +1,703 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Cyber Crime Detection Dashboard</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f1f5f9;
+            margin: 0;
+            padding: 25px;
+            color: #1e293b;
+        }
+
+        h1 {
+            color: #0f172a;
+            margin-bottom: 8px;
+        }
+
+        h2 {
+            margin-top: 30px;
+            color: #0f172a;
+        }
+
+        .subtitle {
+            color: #64748b;
+        }
+
+        .link {
+            display: inline-block;
+            margin: 12px 0;
+            color: #2563eb;
+            text-decoration: none;
+        }
+
+        .link:hover {
+            text-decoration: underline;
+        }
+
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 16px;
+            margin: 22px 0;
+        }
+
+        .card, .chart-container {
+            background: #ffffff;
+            padding: 22px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px #00000012;
+            min-width: 0;
+        }
+
+        .card h3, .chart-container h3 {
+            font-size: 15px;
+            color: #64748b;
+            overflow-wrap: anywhere;
+        }
+
+        .number {
+            font-size: 30px;
+            font-weight: bold;
+            color: #0f172a;
+        }
+
+        .charts {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .chart-box {
+            position: relative;
+            width: 100%;
+            height: 300px;
+        }
+
+        .download-link {
+            display: inline-block;
+            background: #2563eb;
+            color: white;
+            padding: 11px 16px;
+            border-radius: 6px;
+            text-decoration: none;
+            margin: 10px 10px 10px 0;
+        }
+
+        .download-link:hover {
+            background: #1d4ed8;
+        }
+
+        .table-wrap {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            margin-top: 15px;
+        }
+
+        th, td {
+            text-align: left;
+            padding: 12px;
+            border-bottom: 1px solid #e2e8f0;
+            overflow-wrap: anywhere;
+        }
+
+        th {
+            background: #e2e8f0;
+        }
+
+        .notice {
+            margin-top: 25px;
+            color: #64748b;
+            font-size: 13px;
+        }
+
+        .empty-message {
+            background: white;
+            padding: 16px;
+            border-radius: 8px;
+            color: #64748b;
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 14px;
+            }
+
+            th, td {
+                padding: 8px;
+                font-size: 13px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>AI Cyber Crime Detection</h1>
+
+    <p class="subtitle">
+        Admin Dashboard — Prediction Summary
+    </p>
+
+    <a class="link" href="/home">
+        &larr; Back to Prediction Form
+    </a>
+
+
+    <!-- ORIGINAL FIVE-CLASS MODEL SUMMARY -->
+
+    <div class="cards">
+
+        <div class="card">
+            <h3>Total Predictions</h3>
+            <div class="number">{{ total_predictions }}</div>
+        </div>
+
+        <div class="card">
+            <h3>Normal Traffic</h3>
+            <div class="number">{{ normal_count }}</div>
+        </div>
+
+        <div class="card">
+            <h3>Attack-like Predictions</h3>
+            <div class="number">{{ attack_like_count }}</div>
+        </div>
+
+    </div>
+
+
+    <!-- PREDICTION COUNTS BY CLASS -->
+
+    <h2>Prediction Counts by Class</h2>
+
+    <div class="cards">
+
+        {% for class_id, label in class_labels.items() %}
+
+        <div class="card">
+            <h3>{{ label }}</h3>
+
+            <div class="number">
+                {{ class_counts.get(class_id, 0) }}
+            </div>
+
+            <p>Class {{ class_id }}</p>
+        </div>
+
+        {% endfor %}
+
+    </div>
+
+
+    <!-- ORIGINAL MODEL CHARTS -->
+
+    <h2>Prediction Analytics</h2>
+
+    <div class="charts">
+
+        <div class="chart-container">
+            <h3>Predictions by Attack Class</h3>
+
+            <div class="chart-box">
+                <canvas id="classChart"></canvas>
+            </div>
+        </div>
+
+        <div class="chart-container">
+            <h3>Normal vs Attack-like</h3>
+
+            <div class="chart-box">
+                <canvas id="trafficChart"></canvas>
+            </div>
+        </div>
+
+    </div>
+
+
+    <!-- ORIGINAL PREDICTION HISTORY -->
+
+    <h2>Prediction History</h2>
+
+    <a class="download-link" href="/download-history">
+        Download Prediction History (CSV)
+    </a>
+
+    {% if history %}
+
+    <div class="table-wrap">
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Date / Time</th>
+                    <th>Predicted Class</th>
+                    <th>Prediction Label</th>
+                    <th>Input Features</th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+                {% for row in history %}
+
+                <tr>
+                    <td>{{ row.timestamp }}</td>
+                    <td>{{ row.predicted_class }}</td>
+                    <td>{{ row.prediction_label }}</td>
+                    <td>{{ row.features }}</td>
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+        </table>
+
+    </div>
+
+    {% else %}
+
+    <p class="empty-message">
+        No predictions recorded yet.
+        Submit a sample from the prediction form.
+    </p>
+
+    {% endif %}
+
+
+    <!-- TOCTOU DETECTION SUMMARY -->
+
+    <h2>TOCTOU Detection Analytics</h2>
+
+    <div class="cards">
+
+        <div class="card">
+            <h3>Total TOCTOU Predictions</h3>
+            <div class="number">{{ toctou_total }}</div>
+        </div>
+
+        <div class="card">
+            <h3>Normal Predictions</h3>
+            <div class="number">{{ toctou_normal_count }}</div>
+        </div>
+
+        <div class="card">
+            <h3>TOCTOU-like Predictions</h3>
+            <div class="number">{{ toctou_count }}</div>
+        </div>
+
+    </div>
+
+
+    <!-- TOCTOU CHARTS -->
+
+    <h2>TOCTOU Prediction Analytics</h2>
+
+    <div class="charts">
+
+        <div class="chart-container">
+            <h3>TOCTOU Prediction Counts</h3>
+
+            <div class="chart-box">
+                <canvas id="toctouBarChart"></canvas>
+            </div>
+        </div>
+
+        <div class="chart-container">
+            <h3>Normal vs TOCTOU-like</h3>
+
+            <div class="chart-box">
+                <canvas id="toctouDoughnutChart"></canvas>
+            </div>
+        </div>
+
+    </div>
+
+
+    <!-- TOCTOU PREDICTION HISTORY -->
+
+    <h2>TOCTOU Prediction History</h2>
+
+    {% if toctou_history %}
+
+    <div class="table-wrap">
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Date / Time</th>
+                    <th>Predicted Class</th>
+                    <th>Prediction Label</th>
+                    <th>Input Features</th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+                {% for row in toctou_history %}
+
+                <tr>
+                    <td>{{ row.timestamp }}</td>
+                    <td>{{ row.predicted_class }}</td>
+                    <td>{{ row.prediction_label }}</td>
+                    <td>{{ row.features }}</td>
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+        </table>
+
+    </div>
+
+    {% else %}
+
+    <p class="empty-message">
+        No TOCTOU predictions recorded yet.
+        Submit a TOCTOU API test to see results here.
+    </p>
+
+    {% endif %}
+
+
+    <!-- PROJECT NOTICE -->
+
+    <p class="notice">
+        Prototype only: predictions are based on trained models
+        and are not confirmed real-world attacks.
+
+        The TOCTOU model uses controlled simulated data
+        and has not been validated for real-world attacks.
+    </p>
+
+
+    <!-- FLASK / JINJA CHART DATA -->
+
+    <div
+        id="chartData"
+
+        data-labels='{{ [
+            class_labels.get("0", "Normal Traffic"),
+            class_labels.get("1", "SQL Injection-like"),
+            class_labels.get("2", "XSS-like"),
+            class_labels.get("3", "Brute-force-like"),
+            class_labels.get("4", "Race-condition-like")
+        ] | tojson | forceescape }}'
+
+        data-counts='{{ [
+            class_counts.get("0", 0),
+            class_counts.get("1", 0),
+            class_counts.get("2", 0),
+            class_counts.get("3", 0),
+            class_counts.get("4", 0)
+        ] | tojson | forceescape }}'
+
+        data-normal="{{ normal_count }}"
+        data-attack="{{ attack_like_count }}"
+
+        data-toctou-normal="{{ toctou_normal_count }}"
+        data-toctou-attack="{{ toctou_count }}">
+        <a class="download-link" href="/download-toctou-history">
+    Download TOCTOU History (CSV)
+</a>
+
+    </div>
+
+
+    <!-- JAVASCRIPT CHARTS -->
+
+    <script>
+
+        document.addEventListener("DOMContentLoaded", function () {
+
+            const chartData = document.getElementById("chartData");
+
+            if (!chartData) {
+                console.error("Chart data element not found.");
+                return;
+            }
+
+            if (typeof Chart === "undefined") {
+                console.error("Chart.js did not load. Check internet connection.");
+
+                document.querySelectorAll(".charts").forEach(function (container) {
+                    const message = document.createElement("p");
+
+                    message.textContent =
+                        "Charts could not load. Check your internet connection.";
+
+                    message.style.color = "#dc2626";
+
+                    container.prepend(message);
+                });
+
+                return;
+            }
+
+
+            // READ ORIGINAL MODEL DATA
+
+            let classLabels;
+            let classCounts;
+
+            try {
+                classLabels = JSON.parse(chartData.dataset.labels);
+                classCounts = JSON.parse(chartData.dataset.counts);
+            }
+            catch (error) {
+                console.error("Could not parse chart data:", error);
+                return;
+            }
+
+
+            // READ ORIGINAL MODEL COUNTS
+
+            const normalCount = Number(
+                chartData.dataset.normal || 0
+            );
+
+            const attackCount = Number(
+                chartData.dataset.attack || 0
+            );
+
+
+            // READ TOCTOU MODEL COUNTS
+
+            const toctouNormal = Number(
+                chartData.dataset.toctouNormal || 0
+            );
+
+            const toctouAttack = Number(
+                chartData.dataset.toctouAttack || 0
+            );
+
+
+            // ORIGINAL FIVE-CLASS BAR CHART
+
+            const classCanvas =
+                document.getElementById("classChart");
+
+            if (classCanvas) {
+
+                new Chart(classCanvas, {
+
+                    type: "bar",
+
+                    data: {
+                        labels: classLabels,
+
+                        datasets: [{
+                            label: "Prediction Count",
+
+                            data: classCounts,
+
+                            backgroundColor: [
+                                "#16a34a",
+                                "#dc2626",
+                                "#ea580c",
+                                "#9333ea",
+                                "#2563eb"
+                            ],
+
+                            borderWidth: 1
+                        }]
+                    },
+
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+
+                                ticks: {
+                                    precision: 0,
+                                    stepSize: 1
+                                }
+                            }
+                        },
+
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        }
+                    }
+                });
+            }
+
+
+            // ORIGINAL NORMAL VS ATTACK DOUGHNUT CHART
+
+            const trafficCanvas =
+                document.getElementById("trafficChart");
+
+            if (trafficCanvas) {
+
+                new Chart(trafficCanvas, {
+
+                    type: "doughnut",
+
+                    data: {
+                        labels: [
+                            "Normal Traffic",
+                            "Attack-like Predictions"
+                        ],
+
+                        datasets: [{
+                            data: [
+                                normalCount,
+                                attackCount
+                            ],
+
+                            backgroundColor: [
+                                "#16a34a",
+                                "#dc2626"
+                            ],
+
+                            borderWidth: 2
+                        }]
+                    },
+
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+
+                        plugins: {
+                            legend: {
+                                position: "bottom"
+                            }
+                        }
+                    }
+                });
+            }
+
+
+            // TOCTOU BAR CHART
+
+            const toctouBarCanvas =
+                document.getElementById("toctouBarChart");
+
+            if (toctouBarCanvas) {
+
+                new Chart(toctouBarCanvas, {
+
+                    type: "bar",
+
+                    data: {
+                        labels: [
+                            "Normal",
+                            "TOCTOU-like"
+                        ],
+
+                        datasets: [{
+                            label: "Prediction Count",
+
+                            data: [
+                                toctouNormal,
+                                toctouAttack
+                            ],
+
+                            backgroundColor: [
+                                "#16a34a",
+                                "#dc2626"
+                            ],
+
+                            borderWidth: 1
+                        }]
+                    },
+
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+
+                                ticks: {
+                                    precision: 0,
+                                    stepSize: 1
+                                }
+                            }
+                        },
+
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        }
+                    }
+                });
+            }
+
+
+            // TOCTOU DOUGHNUT CHART
+
+            const toctouDoughnutCanvas =
+                document.getElementById("toctouDoughnutChart");
+
+            if (toctouDoughnutCanvas) {
+
+                new Chart(toctouDoughnutCanvas, {
+
+                    type: "doughnut",
+
+                    data: {
+                        labels: [
+                            "Normal",
+                            "TOCTOU-like"
+                        ],
+
+                        datasets: [{
+                            data: [
+                                toctouNormal,
+                                toctouAttack
+                            ],
+
+                            backgroundColor: [
+                                "#16a34a",
+                                "#dc2626"
+                            ],
+
+                            borderWidth: 2
+                        }]
+                    },
+
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+
+                        plugins: {
+                            legend: {
+                                position: "bottom"
+                            }
+                        }
+                    }
+                });
+            }
+
+        });
+
+    </script>
+
+</body>
+</html>

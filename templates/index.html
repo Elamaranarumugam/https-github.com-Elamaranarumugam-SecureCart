@@ -1,0 +1,538 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>SecureCart - Web Attack Detection</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f2f5f9;
+            margin: 0;
+            padding: 30px;
+            color: #202938;
+        }
+
+        .container {
+            max-width: 850px;
+            margin: auto;
+        }
+
+        .card {
+            background: white;
+            padding: 24px;
+            margin: 20px 0;
+            border-radius: 12px;
+            box-shadow: 0 3px 12px #00000010;
+        }
+
+        h1, h2 {
+            color: #174ea6;
+        }
+
+        .fields {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 15px;
+        }
+
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 6px;
+        }
+
+        input {
+            box-sizing: border-box;
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccd3df;
+            border-radius: 6px;
+        }
+
+        button {
+            background: #174ea6;
+            color: white;
+            border: 0;
+            padding: 12px 18px;
+            border-radius: 7px;
+            cursor: pointer;
+            margin-top: 18px;
+        }
+
+        button:hover {
+            background: #103b80;
+        }
+
+        #result,
+        #toctouResult {
+            white-space: pre-wrap;
+            overflow-wrap: anywhere;
+            line-height: 1.6;
+        }
+
+        .hint {
+            color: #596579;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .result-box {
+            background: #f8fafc;
+            border: 1px solid #dbe3ee;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+
+        .toctou-card {
+            border-top: 5px solid #ea580c;
+        }
+
+        .toctou-button {
+            background: #ea580c;
+        }
+
+        .toctou-button:hover {
+            background: #c2410c;
+        }
+
+        .note {
+            background: #fff7ed;
+            border-left: 4px solid #ea580c;
+            padding: 12px;
+            margin-top: 15px;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        .dashboard-link {
+            display: inline-block;
+            background: #174ea6;
+            color: white;
+            padding: 12px 18px;
+            border-radius: 7px;
+            text-decoration: none;
+            margin: 10px 0 20px;
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 12px;
+            }
+
+            .card {
+                padding: 16px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>SecureCart</h1>
+
+    <p>Web Attack Detection — Decision Tree ML Prototype</p>
+
+
+    <!-- SAMPLE PRODUCTS -->
+    <section class="card">
+
+        <h2>Sample Products</h2>
+
+        <p>Laptop — ₹45,000</p>
+        <p>Headphones — ₹1,500</p>
+        <p>Keyboard — ₹900</p>
+
+    </section>
+
+
+    <!-- MAIN MODEL: FIVE-CLASS WEB ATTACK DETECTION -->
+    <section class="card">
+
+        <h2>Test Traffic Prediction</h2>
+
+        <p class="hint">
+            Enter sample traffic features to test the trained
+            five-class Decision Tree model.
+            This is a simulation, not a live attack detector.
+        </p>
+
+        <form id="predictionForm">
+
+            <div class="fields">
+
+                <div>
+                    <label for="sql">SQL keyword count</label>
+                    <input id="sql" type="number" min="0"
+                           value="5" required>
+                </div>
+
+                <div>
+                    <label for="script">Script pattern count</label>
+                    <input id="script" type="number" min="0"
+                           value="0" required>
+                </div>
+
+                <div>
+                    <label for="login">Login frequency</label>
+                    <input id="login" type="number" min="0"
+                           value="2" required>
+                </div>
+
+                <div>
+                    <label for="interval">Inter-arrival time (ms)</label>
+                    <input id="interval" type="number" min="0"
+                           value="600" required>
+                </div>
+
+                <div>
+                    <label for="concurrent">Concurrent requests</label>
+                    <input id="concurrent" type="number" min="0"
+                           value="1" required>
+                </div>
+
+                <div>
+                    <label for="duplicates">Duplicate request count</label>
+                    <input id="duplicates" type="number" min="0"
+                           value="0" required>
+                </div>
+
+                <div>
+                    <label for="session">Session reuse (0 or 1)</label>
+                    <input id="session" type="number" min="0" max="1"
+                           step="1" value="0" required>
+                </div>
+
+            </div>
+
+            <button type="submit">Predict Traffic</button>
+
+        </form>
+
+        <div class="result-box" aria-live="polite">
+
+            <h2>Prediction Result</h2>
+
+            <p id="result">
+                Enter sample values and select Predict Traffic.
+            </p>
+
+        </div>
+
+    </section>
+
+
+    <!-- TOCTOU MODEL -->
+    <section class="card toctou-card">
+
+        <h2>TOCTOU Attack Detection</h2>
+
+        <p class="hint">
+            Enter five timing and request-related features to test
+            the separate experimental TOCTOU Decision Tree model.
+        </p>
+
+        <form id="toctouForm">
+
+            <div class="fields">
+
+                <div>
+                    <label for="check_duration_ms">
+                        Check Duration (ms)
+                    </label>
+
+                    <input
+                        id="check_duration_ms"
+                        type="number"
+                        min="0"
+                        step="any"
+                        value="0.5"
+                        required
+                    >
+                </div>
+
+                <div>
+                    <label for="check_use_delay_ms">
+                        Check-to-Use Delay (ms)
+                    </label>
+
+                    <input
+                        id="check_use_delay_ms"
+                        type="number"
+                        min="0"
+                        step="any"
+                        value="1.0"
+                        required
+                    >
+                </div>
+
+                <div>
+                    <label for="use_duration_ms">
+                        Use Duration (ms)
+                    </label>
+
+                    <input
+                        id="use_duration_ms"
+                        type="number"
+                        min="0"
+                        step="any"
+                        value="0.3"
+                        required
+                    >
+                </div>
+
+                <div>
+                    <label for="toctou_concurrent_requests">
+                        Concurrent Requests
+                    </label>
+
+                    <input
+                        id="toctou_concurrent_requests"
+                        type="number"
+                        min="0"
+                        step="1"
+                        value="2"
+                        required
+                    >
+                </div>
+
+                <div>
+                    <label for="toctou_duplicate_request_count">
+                        Duplicate Request Count
+                    </label>
+
+                    <input
+                        id="toctou_duplicate_request_count"
+                        type="number"
+                        min="0"
+                        step="1"
+                        value="1"
+                        required
+                    >
+                </div>
+
+            </div>
+
+            <button type="submit" class="toctou-button">
+                Predict TOCTOU
+            </button>
+
+        </form>
+
+        <div class="result-box" aria-live="polite">
+
+            <h2>TOCTOU Prediction Result</h2>
+
+            <p id="toctouResult">
+                Enter sample values and select Predict TOCTOU.
+            </p>
+
+        </div>
+
+        <div class="note">
+            <strong>Note:</strong>
+            This TOCTOU model is experimental and trained using
+            controlled simulated data. Its predictions have not
+            been validated for real-world attack detection.
+        </div>
+
+    </section>
+
+
+    <!-- DASHBOARD LINK -->
+    <a href="/dashboard" class="dashboard-link">
+        View Prediction Dashboard
+    </a>
+
+</div>
+
+
+<!-- JAVASCRIPT -->
+<script>
+
+// ========================================
+// MAIN FIVE-CLASS MODEL
+// ========================================
+
+const form = document.getElementById("predictionForm");
+
+const result = document.getElementById("result");
+
+const labels = {
+    "0": "Normal traffic",
+    "1": "SQL Injection-like pattern",
+    "2": "XSS-like pattern",
+    "3": "Brute-force-like pattern",
+    "4": "Race-condition-like duplicate requests"
+};
+
+
+form.addEventListener("submit", async (event) => {
+
+    event.preventDefault();
+
+    result.textContent = "Testing main model...";
+
+    const body = {
+
+        sql_keyword_count:
+            Number(document.getElementById("sql").value),
+
+        script_pattern_count:
+            Number(document.getElementById("script").value),
+
+        login_frequency:
+            Number(document.getElementById("login").value),
+
+        inter_arrival_ms:
+            Number(document.getElementById("interval").value),
+
+        concurrent_requests:
+            Number(document.getElementById("concurrent").value),
+
+        duplicate_request_count:
+            Number(document.getElementById("duplicates").value),
+
+        session_reuse:
+            Number(document.getElementById("session").value)
+
+    };
+
+
+    try {
+
+        const response = await fetch("/api/predict", {
+
+            method: "POST",
+
+            headers: {
+                "Content-Type": "application/json"
+            },
+
+            body: JSON.stringify(body)
+
+        });
+
+
+        const data = await response.json();
+
+        if (!response.ok) {
+
+            result.textContent =
+                "Error: " + (data.error || "Prediction failed");
+
+            return;
+        }
+
+
+        const prediction = String(data.predicted_class);
+
+        result.textContent =
+            "Predicted class: " + prediction + "\n" +
+            "Interpretation: " +
+            (labels[prediction] || "Unknown class") +
+            "\n\n" +
+            (data.note || "");
+
+    }
+
+    catch (error) {
+
+        result.textContent =
+            "Could not connect to Flask. Check whether python app.py is running.";
+
+    }
+
+});
+
+
+// ========================================
+// SEPARATE TOCTOU MODEL
+// ========================================
+
+const toctouForm = document.getElementById("toctouForm");
+
+const toctouResult = document.getElementById("toctouResult");
+
+
+toctouForm.addEventListener("submit", async (event) => {
+
+    event.preventDefault();
+
+    toctouResult.textContent = "Testing TOCTOU model...";
+
+
+    const body = {
+
+        check_duration_ms:
+            Number(document.getElementById("check_duration_ms").value),
+
+        check_use_delay_ms:
+            Number(document.getElementById("check_use_delay_ms").value),
+
+        use_duration_ms:
+            Number(document.getElementById("use_duration_ms").value),
+
+        concurrent_requests:
+            Number(document.getElementById("toctou_concurrent_requests").value),
+
+        duplicate_request_count:
+            Number(document.getElementById("toctou_duplicate_request_count").value)
+
+    };
+
+
+    try {
+
+        const response = await fetch("/api/predict-toctou", {
+
+            method: "POST",
+
+            headers: {
+                "Content-Type": "application/json"
+            },
+
+            body: JSON.stringify(body)
+
+        });
+
+
+        const data = await response.json();
+
+
+        if (!response.ok) {
+
+            toctouResult.textContent =
+                "Error: " + (data.error || "TOCTOU prediction failed");
+
+            return;
+        }
+
+
+        toctouResult.textContent =
+            "Predicted class: " + data.predicted_class + "\n" +
+            "Interpretation: " + data.prediction_label + "\n\n" +
+            (data.note || "");
+
+    }
+
+    catch (error) {
+
+        toctouResult.textContent =
+            "Could not connect to Flask. Check whether python app.py is running.";
+
+    }
+
+});
+
+</script>
+
+</body>
+</html>
