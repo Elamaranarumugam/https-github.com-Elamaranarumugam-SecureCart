@@ -1,0 +1,6 @@
+﻿__pycache__/
+*.py[cod]
+ML/*_history.csv
+.venv/
+venv/
+.env
